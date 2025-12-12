@@ -15,7 +15,7 @@ export default function proxy(req: NextRequest) {
   }
 
   // protect dashboard and attendance paths
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/attendance")) {
+  if (pathname.startsWith("/dashboard")) {
     const token = req.cookies.get("token")?.value;
     if (!token) {
       const loginUrl = new URL("/login", req.url);
@@ -36,5 +36,5 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/attendance/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/login", "/register"],
 };
