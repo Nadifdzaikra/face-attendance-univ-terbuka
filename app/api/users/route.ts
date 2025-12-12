@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getUserById, getAllUsers } from '../../../lib/db';
-import { getAllAttendance } from '../../../lib/attendance-db';
 
 function getTokenUserId(token: string): string | null {
   const parts = token.split('-');
@@ -31,14 +30,12 @@ export async function GET(req: NextRequest) {
     }
 
     const users = getAllUsers();
-    const attendance = getAllAttendance();
 
     const userStats = users.map((u: any) => ({
       id: u.id,
       email: u.email,
       name: u.name,
       role: u.role,
-      attendance_count: attendance.filter((a: any) => a.userId === u.id).length,
       created_at: u.created_at,
     }));
 
