@@ -53,13 +53,13 @@ export function QuickMenuButton({
 
 export default function QuickMenuCard() {
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+    <div className="rounded-xl border border-amber-50 bg-linear-to-br from-white to-amber-50/50 p-6 shadow-sm dark:border-amber-900/30 dark:from-zinc-800 dark:to-amber-900/20">
       <h2 className="mb-4 text-lg font-bold text-zinc-900 dark:text-white">Menu Cepat</h2>
       <div className="grid gap-3">
         <QuickMenuButton
-          color="blue"
-          hoverColor="blue"
-          iconBg="bg-blue-600"
+          color="amber"
+          hoverColor="amber"
+          iconBg="bg-linear-to-br from-amber-500 to-yellow-600"
           title="Registrasi Wajah Baru"
           description="Tambah pegawai baru"
           href="/register"
@@ -94,9 +94,9 @@ export default function QuickMenuCard() {
         /> */}
 
         <QuickMenuButton
-          color="zinc"
-          hoverColor="zinc"
-          iconBg="bg-zinc-600"
+          color="cyan"
+          hoverColor="blue"
+          iconBg="bg-linear-to-br from-cyan-500 to-blue-600"
           title="Laporan Masalah"
           description="Lihat daftar laporan"
           href="/dashboard/problems-list"

@@ -16,13 +16,28 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successCountdown, setSuccessCountdown] = useState(0); // Countdown 10 detik sebelum reset
+  const [captureStatus, setCaptureStatus] = useState<"idle" | "captured" | "processing" | "success">("idle");
+  const [submitDelay, setSubmitDelay] = useState(0); // Countdown untuk delay submit
 
   const handleCapture = async (base64Image: string) => {
     setCapturedImage(base64Image);
+    setCaptureStatus("captured");
     setError(null);
     
-    // Auto submit setelah capture
-    submitAttendance(base64Image);
+    // Start delay countdown sebelum submit (2 detik)
+    setSubmitDelay(2);
+    let timeLeft = 2;
+    const delayInterval = setInterval(() => {
+      timeLeft -= 1;
+      setSubmitDelay(timeLeft);
+      
+      if (timeLeft === 0) {
+        clearInterval(delayInterval);
+        setCaptureStatus("processing");
+        submitAttendance(base64Image);
+      }
+    }, 1000);
   };
 
   const submitAttendance = async (imageData: string) => {
@@ -42,18 +57,35 @@ export default function AttendancePage() {
       });
 
       console.log("Attendance success:", response.data);
-      setSuccess(true);
-      setCapturedImage(null);
-
+      setCaptureStatus("success");
+      
       setTimeout(() => {
-        router.push("/");
-      }, 2000);
+        setSuccess(true);
+        setCapturedImage(null);
+        setCaptureStatus("idle");
+        setSuccessCountdown(20);
+        
+        // 20 detik delay sebelum reset ke step 1
+        let countDown = 20;
+        const countdownInterval = setInterval(() => {
+          countDown -= 1;
+          setSuccessCountdown(countDown);
+          
+          if (countDown === 0) {
+            clearInterval(countdownInterval);
+            setStep(1);
+            setRuang("");
+            setSuccess(false);
+          }
+        }, 1000);
+      }, 1200);
     } catch (err: any) {
       console.error("Attendance error:", err);
       setError(
         err?.response?.data?.message ||
         "Absensi gagal. Silakan coba lagi."
       );
+      setCaptureStatus("idle");
       setCapturedImage(null);
     } finally {
       setLoading(false);
@@ -72,6 +104,8 @@ export default function AttendancePage() {
   // Reset form
   const handleReset = () => {
     setCapturedImage(null);
+    setCaptureStatus("idle");
+    setSubmitDelay(0);
     setError(null);
     setSuccess(false);
   };
@@ -141,9 +175,15 @@ export default function AttendancePage() {
                     <h2 className="mb-2 text-xl font-bold text-green-900">
                       Absensi Berhasil!
                     </h2>
-                    <p className="text-sm text-green-700">
-                      Kehadiran Anda telah dicatat. Anda akan dikembalikan ke beranda dalam beberapa detik...
+                    <p className="text-sm text-green-700 mb-4">
+                      Kehadiran Anda telah dicatat.
                     </p>
+                    <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2">
+                      <svg className="h-5 w-5 text-green-600 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                      </svg>
+                      <span className="text-sm font-semibold text-green-700">Reset dalam {successCountdown}s</span>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -265,6 +305,42 @@ export default function AttendancePage() {
                               className="w-full"
                             />
                           </div>
+                          
+                          {/* Delay Countdown Sebelum Submit */}
+                          {submitDelay > 0 && (
+                            <div className="flex items-center justify-center gap-2 rounded-lg bg-blue-50 p-3 border border-blue-200">
+                              <svg className="h-5 w-5 animate-spin text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              <span className="text-sm font-medium text-blue-700">
+                                Mengirim dalam {submitDelay} detik...
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Processing State */}
+                          {captureStatus === "processing" && (
+                            <div className="flex items-center justify-center gap-2 rounded-lg bg-purple-50 p-3 border border-purple-200">
+                              <svg className="h-5 w-5 animate-spin text-purple-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              <span className="text-sm font-medium text-purple-700">
+                                Memproses verifikasi wajah...
+                              </span>
+                            </div>
+                          )}
+                          
+                          {/* Success State */}
+                          {captureStatus === "success" && (
+                            <div className="flex items-center justify-center gap-2 rounded-lg bg-green-50 p-3 border border-green-200">
+                              <svg className="h-5 w-5 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                              </svg>
+                              <span className="text-sm font-medium text-green-700">
+                                ✅ Verifikasi Berhasil!
+                              </span>
+                            </div>
+                          )}
                         </div>
                       )}
 

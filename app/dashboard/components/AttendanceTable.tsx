@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 import ExcelJS from "exceljs";
-
+import { FaDoorClosed, FaDoorOpen } from "react-icons/fa6";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.0.107.18:8009/api";
 
 interface AttendanceRecord {
@@ -329,29 +329,25 @@ export default function AttendanceTable({ type }: AttendanceTableProps) {
   };
 
   return (
-    <div className="overflow-hidden rounded-xl border border-zinc-200 bg-white shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+    <div className="overflow-hidden rounded-xl border border-amber-100 bg-linear-to-br from-white to-amber-50/30 shadow-sm dark:border-amber-900/30 dark:from-zinc-800 dark:to-amber-900/20">
       {/* Header */}
-      <div className="border-b border-zinc-200 bg-zinc-50 px-4 py-3 dark:border-zinc-700 dark:bg-zinc-900/50 sm:px-6">
+      <div className="border-b border-amber-200 bg-linear-to-r from-amber-50 to-yellow-50/30 px-4 py-3 dark:border-amber-900/30 dark:from-zinc-900/50 dark:to-zinc-900/30 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-          <h3 className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-white sm:text-base">
+          <h3 className="flex items-center gap-2 text-sm font-bold text-zinc-900 dark:text-white sm:text-base text-nowrap">
             {type === "check-in" ? (
               <>
-                <svg className="h-8 w-8 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
-                </svg>
-                Data Check-In Hari Ini
+                <FaDoorOpen className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                Check-In Hari Ini
               </>
             ) : (
               <>
-                <svg className="h-8 w-8 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-                Data Check-Out Hari Ini
+                <FaDoorClosed className="h-6 w-6 text-amber-600 dark:text-amber-400" />
+                Check-Out Hari Ini
               </>
             )}
             <Link
               href={type === "check-in" ? "/dashboard/checkin" : "/dashboard/checkout"}
-              className="ml-2 text-nowrap text-xs font-medium text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300"
+              className="ml-2 text-nowrap text-xs font-medium text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300"
             >
               (Lihat Detail)
             </Link>
@@ -360,7 +356,7 @@ export default function AttendanceTable({ type }: AttendanceTableProps) {
             <button
               onClick={exportToExcel}
               disabled={loading || data.length === 0}
-              className="flex items-center gap-1.5 rounded-lg bg-green-100 px-3 py-1.5 text-xs font-medium text-green-700 transition-colors hover:bg-green-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50"
+              className="flex items-center gap-1.5 rounded-lg bg-amber-100 px-3 py-1.5 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-200 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-amber-900/30 dark:text-amber-400 dark:hover:bg-amber-900/50"
               title="Export ke Excel"
             >
               <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

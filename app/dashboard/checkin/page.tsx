@@ -8,7 +8,6 @@ import ExcelJS from "exceljs";
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.0.107.18:8009/api";
 
 interface AttendanceRecord {
-  id: number;
   name: string;
   timestamps: string;
   timestamps_formatted?: string;
@@ -43,7 +42,7 @@ export default function CheckInDetailPage() {
     try {
       setLoading(true);
       setError(null);
-      
+
       // Gunakan endpoint tunggal /absences dengan limit besar
       const response = await axios.get(`${API_URL}/absences`, {
         params: {
@@ -51,7 +50,7 @@ export default function CheckInDetailPage() {
           limit: 1000,
         },
       });
-      
+
       if (response.data && Array.isArray(response.data.items)) {
         setAllData(response.data.items);
       } else {
@@ -75,7 +74,6 @@ export default function CheckInDetailPage() {
       const searchLower = searchTerm.toLowerCase();
       filtered = filtered.filter((record) =>
         record.name?.toLowerCase().includes(searchLower) ||
-        record.id.toString().includes(searchLower) ||
         formatTimestamp(record.timestamps, record.timestamps_formatted).toLowerCase().includes(searchLower)
       );
     }
@@ -89,7 +87,7 @@ export default function CheckInDetailPage() {
           const datePart = timestampStr.split(' ')[0]; // "05-11-2025"
           const [day, month, year] = datePart.split('-'); // ["05", "11", "2025"]
           const recordDate = `${year}-${month}-${day}`; // "2025-11-05" untuk compare
-          
+
           return recordDate === dateFilter;
         } catch (error) {
           console.error('Error parsing date:', record.timestamps, error);
@@ -103,19 +101,19 @@ export default function CheckInDetailPage() {
 
   const formatTimestamp = (timestamps: string, formatted?: string) => {
     if (formatted) return formatted;
-    
+
     try {
       // Format dari API: "05-11-2025 04:43:41" (DD-MM-YYYY HH:mm:ss)
       const [datePart, timePart] = timestamps.split(' ');
       const [day, month, year] = datePart.split('-');
-      
+
       // Parse sebagai DD-MM-YYYY
       const date = new Date(`${year}-${month}-${day}T${timePart || '00:00:00'}`);
-      
+
       if (isNaN(date.getTime())) {
         return timestamps; // Jika gagal parse, return original
       }
-      
+
       return date.toLocaleString("id-ID", {
         day: "2-digit",
         month: "short",
@@ -137,7 +135,6 @@ export default function CheckInDetailPage() {
 
     const excelData = data.map((record, index) => ({
       "No": index + 1,
-      "ID": record.id,
       "Nama": record.name || "Unknown",
       "Waktu": formatTimestamp(record.timestamps, record.timestamps_formatted),
       "Status": "Check-in"
@@ -157,7 +154,7 @@ export default function CheckInDetailPage() {
 
     // Tambahkan data
     excelData.forEach(record => {
-      worksheet.addRow([record["No"], record["ID"], record["Nama"], record["Waktu"], record["Status"]]);
+      worksheet.addRow([record["No"], record["Nama"], record["Waktu"], record["Status"]]);
     });
 
     // Atur lebar kolom
@@ -222,7 +219,7 @@ export default function CheckInDetailPage() {
               className="w-full rounded-lg border border-zinc-300 bg-white py-2 pl-10 pr-4 text-sm text-zinc-900 placeholder-zinc-400 transition-all focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/10 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white dark:placeholder-zinc-500"
             />
           </div>
-          
+
           <div className="relative">
             <input
               type="date"
@@ -275,19 +272,16 @@ export default function CheckInDetailPage() {
           <table className="w-full">
             <thead className="bg-zinc-50 dark:bg-zinc-900/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   No
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
-                  ID
-                </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Nama
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Waktu Check-In
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Status
                 </th>
               </tr>
@@ -295,7 +289,7 @@ export default function CheckInDetailPage() {
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={4} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex items-center justify-center gap-2">
                       <svg className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -307,7 +301,7 @@ export default function CheckInDetailPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={4} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex flex-col items-center gap-2">
                       <svg className="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -324,7 +318,7 @@ export default function CheckInDetailPage() {
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={4} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex flex-col items-center gap-2">
                       <svg className="h-10 w-10 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -338,14 +332,11 @@ export default function CheckInDetailPage() {
               ) : (
                 data.map((record, index) => (
                   <tr
-                    key={record.id}
+                    key={index}
                     className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/30"
                   >
-                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400 sm:px-6">
+                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400 text-center sm:px-6">
                       {index + 1}
-                    </td>
-                    <td className="px-4 py-3 text-sm font-medium text-zinc-900 dark:text-white sm:px-6">
-                      #{record.id}
                     </td>
                     <td className="px-4 py-3 sm:px-6">
                       <div className="flex items-center gap-2">
@@ -359,10 +350,10 @@ export default function CheckInDetailPage() {
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-sm text-zinc-600 dark:text-zinc-400 sm:px-6">
+                    <td className="px-4 py-3 text-center text-sm text-zinc-600 dark:text-zinc-400 sm:px-6">
                       {formatTimestamp(record.timestamps, record.timestamps_formatted)}
                     </td>
-                    <td className="px-4 py-3 sm:px-6">
+                    <td className="px-4 py-3 flex justify-center sm:px-6">
                       <span className="inline-flex items-center gap-1 rounded-full bg-blue-100 px-2.5 py-1 text-xs font-semibold text-blue-700 dark:bg-blue-900/30 dark:text-blue-400">
                         <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />

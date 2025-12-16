@@ -216,7 +216,7 @@ export default function AttendanceCamera({
     const now = Date.now();
     const timeSinceLastCapture = now - lastCaptureTimeRef.current;
 
-    if (timeSinceLastCapture >= 10000) {
+    if (timeSinceLastCapture >= 90000) {
       lastCaptureTimeRef.current = now;
       const imageSrc = webcamRef.current?.getScreenshot();
       if (imageSrc) {

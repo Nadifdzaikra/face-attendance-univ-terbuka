@@ -188,7 +188,7 @@ export default function ActivityCard() {
   }, []);
 
   return (
-    <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+    <div className="rounded-xl border border-amber-50 hover:border bg-linear-to-br from-white to-amber-50/50 p-6 shadow-sm dark:border-amber-900/30 dark:from-zinc-800 dark:to-amber-900/20">
       <h2 className="mb-4 text-lg font-bold text-zinc-900 dark:text-white">
         Aktivitas Terbaru
       </h2>

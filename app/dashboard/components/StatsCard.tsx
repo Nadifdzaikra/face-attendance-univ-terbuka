@@ -78,7 +78,7 @@ export default function StatsCard() {
   return (
     <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {/* Total Pegawai - Clickable Link */}
-      <Link href="/dashboard/users-list" className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:shadow-md hover:border-blue-300 dark:border-zinc-700 dark:bg-zinc-800 dark:hover:border-blue-600">
+      <Link href="/dashboard/users-list" className="rounded-xl bg-linear-to-br from-white to-amber-50/30 p-6 shadow-sm transition-all border border-slate-50 :shadow-md hover:border hover:border-amber-300 dark:border-amber-900/30 dark:from-zinc-800 dark:to-amber-900/20 dark:hover:border-amber-600">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total Pegawai</p>
@@ -88,8 +88,8 @@ export default function StatsCard() {
               <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">{stats.totalPegawai}</p>
             )}
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
-            <svg className="h-6 w-6 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-amber-100 to-yellow-100 dark:from-amber-900/30 dark:to-yellow-900/30">
+            <svg className="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
             </svg>
           </div>
@@ -98,7 +98,7 @@ export default function StatsCard() {
       </Link>
 
       {/* Hadir Hari Ini */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="rounded-xl border border-slate-50 hover:border hover:border-green-200 bg-linear-to-br from-white to-green-50/30 p-6 shadow-sm dark:border-green-900/30 dark:from-zinc-800 dark:to-green-900/20">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Hadir Hari Ini</p>
@@ -108,7 +108,7 @@ export default function StatsCard() {
               <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">{stats.hadirHariIni}</p>
             )}
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-green-100 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30">
             <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
@@ -120,7 +120,7 @@ export default function StatsCard() {
       </div>
 
       {/* Check-Out */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="rounded-xl border border-slate-50 hover:border hover:border-cyan-200 bg-linear-to-br from-white to-cyan-50/30 p-6 shadow-sm dark:border-cyan-900/30 dark:from-zinc-800 dark:to-cyan-900/20">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Check-Out</p>
@@ -130,8 +130,8 @@ export default function StatsCard() {
               <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">{stats.checkOut}</p>
             )}
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
-            <svg className="h-6 w-6 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-cyan-100 to-blue-100 dark:from-cyan-900/30 dark:to-blue-900/30">
+            <svg className="h-6 w-6 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
             </svg>
           </div>
@@ -142,7 +142,7 @@ export default function StatsCard() {
       </div>
 
       {/* Total Absensi */}
-      <div className="rounded-xl border border-zinc-200 bg-white p-6 shadow-sm dark:border-zinc-700 dark:bg-zinc-800">
+      <div className="rounded-xl border border-slate-50 hover:border hover:border-purple-200 bg-linear-to-br from-white to-purple-50/30 p-6 shadow-sm dark:border-purple-900/30 dark:from-zinc-800 dark:to-purple-900/20">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-sm font-medium text-zinc-600 dark:text-zinc-400">Total Absensi</p>
@@ -152,7 +152,7 @@ export default function StatsCard() {
               <p className="mt-2 text-3xl font-bold text-zinc-900 dark:text-white">{stats.totalAbsensi}</p>
             )}
           </div>
-          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 dark:bg-purple-900/30">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-linear-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30">
             <svg className="h-6 w-6 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
             </svg>
