@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import axios from "axios";
 
-const API_URL = "https://api-face-inahef.layanancerdas.id/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.0.107.18:8009/api";
 
 interface FormErrors {
   name?: string;

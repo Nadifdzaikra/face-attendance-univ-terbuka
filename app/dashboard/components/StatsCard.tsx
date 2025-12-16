@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import Link from "next/link";
 
-const API_URL = "https://api-face-inahef.layanancerdas.id/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.0.107.18:8009/api";
 
 interface StatsData {
   totalPegawai: number;

@@ -8,12 +8,14 @@ interface AttendanceCameraProps {
   onCapture: (base64Image: string) => void;
   disabled?: boolean;
   loading?: boolean;
+  autoCapture?: boolean; // Enable automatic capture when face detected
 }
 
 export default function AttendanceCamera({ 
   onCapture, 
   disabled = false,
-  loading = false 
+  loading = false,
+  autoCapture = false
 }: AttendanceCameraProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -23,6 +25,7 @@ export default function AttendanceCamera({
   const [faceStatus, setFaceStatus] = useState<string>("Mencari wajah...");
   const [canCapture, setCanCapture] = useState(false);
   const [faceapi, setFaceapi] = useState<any>(null);
+  const lastCaptureTimeRef = useRef<number>(0); // Debounce timer untuk prevent repeated API calls
 
   // Load face-api.js dynamically
   useEffect(() => {
@@ -180,18 +183,48 @@ export default function AttendanceCamera({
     return () => clearInterval(interval);
   }, [modelsLoaded, canCapture, faceapi]);
 
-  // Capture foto dari webcam
+  // Capture foto dari webcam dengan debounce
   const captureHandler = useCallback(() => {
     if (!canCapture) {
       return;
     }
 
+    const now = Date.now();
+    const timeSinceLastCapture = now - lastCaptureTimeRef.current;
+
+    // Debounce: tunggu minimum 3 detik sebelum capture berikutnya
+    if (timeSinceLastCapture < 3000) {
+      console.log("⏳ Tunggu sebelum capture berikutnya...");
+      return;
+    }
+
+    lastCaptureTimeRef.current = now;
+
     const imageSrc = webcamRef.current?.getScreenshot();
     if (imageSrc) {
       const base64Image = imageSrc.split(",")[1];
+      // Kirim base64 image ke parent component
       onCapture(base64Image);
     }
   }, [canCapture, onCapture]);
+
+  useEffect(() => {
+    if (!autoCapture || !canCapture || loading) {
+      return;
+    }
+
+    const now = Date.now();
+    const timeSinceLastCapture = now - lastCaptureTimeRef.current;
+
+    if (timeSinceLastCapture >= 10000) {
+      lastCaptureTimeRef.current = now;
+      const imageSrc = webcamRef.current?.getScreenshot();
+      if (imageSrc) {
+        const base64Image = imageSrc.split(",")[1];
+        onCapture(base64Image);
+      }
+    }
+  }, [autoCapture, canCapture, loading, onCapture]);
 
   return (
     <div className="space-y-4">
@@ -236,8 +269,8 @@ export default function AttendanceCamera({
         />
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 to-transparent"></div>
         
-        {/* Capture Button */}
-        <button
+        {/* Capture Button - Commented for auto-capture */}
+        {/* <button
           type="button"
           onClick={captureHandler}
           disabled={!canCapture || !modelsLoaded || disabled || loading}
@@ -248,7 +281,7 @@ export default function AttendanceCamera({
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
           </svg>
           <span>{loading ? "Memproses..." : "Ambil Foto"}</span>
-        </button>
+        </button> */}
       </div>
     </div>
   );
