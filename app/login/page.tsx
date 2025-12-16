@@ -42,7 +42,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-amber-50 via-yellow-50 to-white dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-linear-to-br from-amber-50 via-yellow-50 to-white dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-900 p-5 lg:p-0">
       <div className="hidden lg:grid lg:grid-cols-2 lg:w-full lg:h-screen overflow-hidden">
         <div className="relative overflow-hidden bg-zinc-100 dark:bg-zinc-900">
           <Image

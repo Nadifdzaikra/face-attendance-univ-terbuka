@@ -16,6 +16,7 @@ export default function AttendancePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+  const [successName, setSuccessName] = useState(""); // Nama dari response recognize
   const [successCountdown, setSuccessCountdown] = useState(0); // Countdown 10 detik sebelum reset
   const [captureStatus, setCaptureStatus] = useState<"idle" | "captured" | "processing" | "success">("idle");
   const [submitDelay, setSubmitDelay] = useState(0); // Countdown untuk delay submit
@@ -58,15 +59,16 @@ export default function AttendancePage() {
 
       console.log("Attendance success:", response.data);
       setCaptureStatus("success");
+      setSuccessName(response.data?.name || "Pengguna"); // Simpan nama dari response
       
       setTimeout(() => {
         setSuccess(true);
         setCapturedImage(null);
         setCaptureStatus("idle");
-        setSuccessCountdown(20);
+        setSuccessCountdown(15);
         
-        // 20 detik delay sebelum reset ke step 1
-        let countDown = 20;
+        // 15 detik delay sebelum reset ke step 1
+        let countDown = 15;
         const countdownInterval = setInterval(() => {
           countDown -= 1;
           setSuccessCountdown(countDown);
@@ -76,6 +78,7 @@ export default function AttendancePage() {
             setStep(1);
             setRuang("");
             setSuccess(false);
+            setSuccessName(""); // Reset nama
           }
         }, 1000);
       }, 1200);
@@ -176,7 +179,7 @@ export default function AttendancePage() {
                       Absensi Berhasil!
                     </h2>
                     <p className="text-sm text-green-700 mb-4">
-                      Kehadiran Anda telah dicatat.
+                      Selamat datang, <span className="font-semibold">{successName}</span>. Kehadiran Anda telah dicatat.
                     </p>
                     <div className="inline-flex items-center gap-2 rounded-full bg-green-100 px-4 py-2">
                       <svg className="h-5 w-5 text-green-600 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -257,7 +260,7 @@ export default function AttendancePage() {
                           onClick={handleNextStep}
                           className="flex-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 transition-colors flex items-center justify-center gap-2"
                         >
-                          <span>Lanjut ke Deteksi Wajah</span>
+                          <div className="flex gap-x-1">Lanjut<div className="lg:flex hidden"> ke absensi wajah</div></div>
                           <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 7l5 5m0 0l-5 5m5-5H6" />
                           </svg>
