@@ -20,6 +20,8 @@ export default function AttendancePage() {
   const [successCountdown, setSuccessCountdown] = useState(0); // Countdown 10 detik sebelum reset
   const [captureStatus, setCaptureStatus] = useState<"idle" | "captured" | "processing" | "success">("idle");
   const [submitDelay, setSubmitDelay] = useState(0); // Countdown untuk delay submit
+  const [isUnrecognizedFace, setIsUnrecognizedFace] = useState(false); // Track jika wajah tidak dikenali
+  const [resetCaptureCount, setResetCaptureCount] = useState(0); // Counter untuk reset capture
 
   const handleCapture = async (base64Image: string) => {
     setCapturedImage(base64Image);
@@ -58,8 +60,20 @@ export default function AttendancePage() {
       });
 
       console.log("Attendance success:", response.data);
+      
+      const recognizedName = response.data?.name?.toLowerCase();
+      if (recognizedName === "unknown" || !recognizedName) {
+        setError("Wajah tidak dikenali. Silakan coba lagi.");
+        setIsUnrecognizedFace(true);
+        setCaptureStatus("idle");
+        setCapturedImage(null);
+        setLoading(false);
+        return;
+      }
+      setIsUnrecognizedFace(false);
+
       setCaptureStatus("success");
-      setSuccessName(response.data?.name || "Pengguna"); // Simpan nama dari response
+      setSuccessName(response.data?.name || "Pengguna"); 
       
       setTimeout(() => {
         setSuccess(true);
@@ -111,6 +125,15 @@ export default function AttendancePage() {
     setSubmitDelay(0);
     setError(null);
     setSuccess(false);
+  };
+
+  // Retry capture untuk unrecognized face
+  const handleRetryCapture = () => {
+    setCapturedImage(null);
+    setCaptureStatus("idle");
+    setError(null);
+    setIsUnrecognizedFace(false);
+    setResetCaptureCount(prev => prev + 1); // Increment counter
   };
 
   const handleNextStep = () => {
@@ -291,6 +314,7 @@ export default function AttendancePage() {
                           loading={loading}
                           autoCapture={!capturedImage && step === 2}
                           enableCapture={!capturedImage && step === 2}
+                          shouldResetCapture={resetCaptureCount}
                         />
                       </div>
 
@@ -349,11 +373,26 @@ export default function AttendancePage() {
                       )}
 
                       {error && (
-                        <div className="flex items-start gap-3 rounded-xl border-2 border-red-200 bg-linear-to-r from-red-50 to-rose-50 p-4">
-                          <svg className="h-6 w-6 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                          <p className="text-sm font-medium text-red-700">{error}</p>
+                        <div className="space-y-3">
+                          <div className="flex items-start gap-3 rounded-xl border-2 border-red-200 bg-linear-to-r from-red-50 to-rose-50 p-4">
+                            <svg className="h-6 w-6 shrink-0 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            <p className="text-sm font-medium text-red-700">{error}</p>
+                          </div>
+                          {isUnrecognizedFace && (
+                            <button
+                              type="button"
+                              onClick={handleRetryCapture}
+                              disabled={loading}
+                              className="w-full rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold py-2.5 transition-colors flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              <span>Ambil Foto Ulang</span>
+                            </button>
+                          )}
                         </div>
                       )}
 
@@ -393,9 +432,23 @@ export default function AttendancePage() {
                               type="button"
                               onClick={handleReset}
                               disabled={loading}
-                              className="px-6 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+                              className="flex-1 rounded-lg border-2 border-amber-500 text-amber-600 font-semibold hover:bg-amber-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                             >
-                              Ulangi
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                              </svg>
+                              <span>Ambil Ulang</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={handleBackStep}
+                              disabled={loading}
+                              className="flex-1 rounded-lg border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                            >
+                              <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                              </svg>
+                              <span>Kembali</span>
                             </button>
                           </>
                         ) : (

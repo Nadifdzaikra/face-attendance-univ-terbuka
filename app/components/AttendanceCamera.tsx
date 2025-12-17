@@ -10,24 +10,34 @@ interface AttendanceCameraProps {
   loading?: boolean;
   autoCapture?: boolean; // Enable automatic capture when face detected
   enableCapture?: boolean; // Enable detection loop (pause if false)
+  shouldResetCapture?: number; // Counter to reset capture timer on retry
 }
 
-export default function AttendanceCamera({ 
-  onCapture, 
+export default function AttendanceCamera({
+  onCapture,
   disabled = false,
   loading = false,
   autoCapture = false,
-  enableCapture = true
+  enableCapture = true,
+  shouldResetCapture = 0
 }: AttendanceCameraProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  
+
   const [modelsLoaded, setModelsLoaded] = useState(false);
   const [faceDetected, setFaceDetected] = useState(false);
   const [faceStatus, setFaceStatus] = useState<string>("Mencari wajah...");
   const [canCapture, setCanCapture] = useState(false);
   const [faceapi, setFaceapi] = useState<any>(null);
-  const lastCaptureTimeRef = useRef<number>(0); // Debounce timer untuk prevent repeated API calls
+  const lastCaptureTimeRef = useRef<number>(0); // Debounce timer repeated API calls
+  const faceDetectedTimeRef = useRef<number>(0); // Timer untuk delay sesudah face detected
+
+  useEffect(() => {
+    if (shouldResetCapture) {
+      lastCaptureTimeRef.current = 0;
+      faceDetectedTimeRef.current = 0;
+    }
+  }, [shouldResetCapture]);
 
   // Load face-api.js dynamically
   useEffect(() => {
@@ -42,10 +52,9 @@ export default function AttendanceCamera({
     loadFaceApi();
   }, []);
 
-  // Load face detection models
   useEffect(() => {
     if (!faceapi) return;
-    
+
     const loadModels = async () => {
       const MODEL_URLS = [
         "https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model",
@@ -101,10 +110,10 @@ export default function AttendanceCamera({
 
         if (detections && detections.detection && detections.detection.box) {
           const { box } = detections.detection;
-          
+
           // Validasi bahwa box memiliki nilai numerik yang valid
-          if (box.x === null || box.y === null || box.width === null || box.height === null || 
-              isNaN(box.x) || isNaN(box.y) || isNaN(box.width) || isNaN(box.height)) {
+          if (box.x === null || box.y === null || box.width === null || box.height === null ||
+            isNaN(box.x) || isNaN(box.y) || isNaN(box.width) || isNaN(box.height)) {
             setFaceDetected(false);
             setFaceStatus("⏳ Mempersiapkan deteksi...");
             setCanCapture(false);
@@ -145,6 +154,8 @@ export default function AttendanceCamera({
               setCanCapture(false);
             } else {
               setFaceStatus("✅ Posisi sempurna! Siap capture");
+              // Set face detected time untuk delay capture
+              faceDetectedTimeRef.current = Date.now();
               setCanCapture(true);
             }
           }
@@ -157,11 +168,11 @@ export default function AttendanceCamera({
             };
             faceapi.matchDimensions(canvas, displaySize);
             const resizedDetections = faceapi.resizeResults(detections, displaySize);
-            
+
             const ctx = canvas.getContext("2d");
             if (ctx) {
               ctx.clearRect(0, 0, canvas.width, canvas.height);
-              
+
               const color = canCapture ? "#f59e0b" : "#ef4444";
               ctx.strokeStyle = color;
               ctx.lineWidth = 3;
@@ -177,7 +188,7 @@ export default function AttendanceCamera({
           setFaceDetected(false);
           setFaceStatus("❌ Tidak ada wajah terdeteksi");
           setCanCapture(false);
-          
+
           if (canvasRef.current) {
             const ctx = canvasRef.current.getContext("2d");
             if (ctx) {
@@ -204,10 +215,17 @@ export default function AttendanceCamera({
 
     const now = Date.now();
     const timeSinceLastCapture = now - lastCaptureTimeRef.current;
+    const timeSinceFaceDetected = now - faceDetectedTimeRef.current;
 
     // Debounce: tunggu minimum 3 detik sebelum capture berikutnya
     if (timeSinceLastCapture < 3000) {
       console.log("⏳ Tunggu sebelum capture berikutnya...");
+      return;
+    }
+
+    // Tunggu 1.5 detik setelah face pertama kali terdeteksi agar kotak terlihat
+    if (timeSinceFaceDetected < 1500) {
+      console.log("⏳ Menunggu untuk capture...");
       return;
     }
 
@@ -222,11 +240,14 @@ export default function AttendanceCamera({
   }, [canCapture, onCapture]);
 
   useEffect(() => {
-    if (!autoCapture || !canCapture || loading || !enableCapture) {
+    const now = Date.now();
+    const timeSinceFaceDetected = now - faceDetectedTimeRef.current;
+
+    // Tunggu 1.5 detik setelah face detected dan 3 detik sejak capture terakhir
+    if (timeSinceFaceDetected >= 1500 && !autoCapture || !canCapture || loading || !enableCapture) {
       return;
     }
 
-    const now = Date.now();
     const timeSinceLastCapture = now - lastCaptureTimeRef.current;
 
     if (timeSinceLastCapture >= 90000) {
@@ -242,11 +263,10 @@ export default function AttendanceCamera({
   return (
     <div className="space-y-4">
       {/* Status Deteksi Wajah */}
-      <div className={`flex items-center gap-2 rounded-lg p-3 text-sm font-medium transition-all ${
-        canCapture 
-          ? "bg-linear-to-r from-green-50 to-emerald-50 text-green-700 shadow-sm ring-2 ring-green-500/20 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-400 dark:ring-green-500/30" 
+      <div className={`flex items-center gap-2 rounded-lg p-3 text-sm font-medium transition-all ${canCapture
+          ? "bg-linear-to-r from-green-50 to-emerald-50 text-green-700 shadow-sm ring-2 ring-green-500/20 dark:from-green-900/30 dark:to-emerald-900/30 dark:text-green-400 dark:ring-green-500/30"
           : "bg-linear-to-r from-red-50 to-orange-50 text-red-700 shadow-sm ring-2 ring-red-500/20 dark:from-red-900/30 dark:to-orange-900/30 dark:text-red-400 dark:ring-red-500/30"
-      }`}>
+        }`}>
         <div className="shrink-0">
           {canCapture ? (
             <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -281,7 +301,7 @@ export default function AttendanceCamera({
           className="absolute left-0 top-0 h-full w-full"
         />
         <div className="pointer-events-none absolute inset-0 bg-linear-to-t from-black/20 to-transparent"></div>
-        
+
         {/* Capture Button - Commented for auto-capture */}
         {/* <button
           type="button"
