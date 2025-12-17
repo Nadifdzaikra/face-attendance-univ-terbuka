@@ -287,9 +287,10 @@ export default function AttendancePage() {
                         </label>
                         <AttendanceCamera
                           onCapture={handleCapture}
-                          disabled={loading}
+                          disabled={loading || !capturedImage === false}
                           loading={loading}
-                          autoCapture={!capturedImage}
+                          autoCapture={!capturedImage && step === 2}
+                          enableCapture={!capturedImage && step === 2}
                         />
                       </div>
 

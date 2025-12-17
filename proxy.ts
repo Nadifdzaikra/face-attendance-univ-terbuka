@@ -4,11 +4,14 @@ import { NextResponse, type NextRequest } from "next/server";
 export default function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
-  // allow next internal routes, static files, api, and public
+  // allow next internal routes, static files, api, public, dan docs
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     pathname.startsWith("/public") ||
+    pathname.startsWith("/swagger") ||
+    pathname.startsWith("/api-docs") ||
+    pathname.startsWith("/docs") ||
     pathname.includes(".")
   ) {
     return NextResponse.next();
@@ -36,5 +39,5 @@ export default function proxy(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/dashboard/:path*", "/login", "/register"],
+  matcher: ["/dashboard/:path*", "/login", "/register", "/swagger/:path*", "/api-docs/:path*", "/docs/:path*"],
 };

@@ -31,6 +31,9 @@ export default function UsersListPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [deleteConfirmDialog, setDeleteConfirmDialog] = useState<{ open: boolean; userName: string; userId: string }>({ open: false, userName: "", userId: "" });
+  const [successDialog, setSuccessDialog] = useState<{ open: boolean; message: string }>({ open: false, message: "" });
+  const [deletingUser, setDeletingUser] = useState<string | null>(null);
 
   // Fetch data on mount
   useEffect(() => {
@@ -105,6 +108,41 @@ export default function UsersListPage() {
     setPagination({ page: safePage, limit: itemsPerPage, total, pages, returned: pageData.length });
   };
 
+  const handleDeleteClick = (userName: string) => {
+    setDeleteConfirmDialog({ open: true, userName, userId: userName });
+  };
+
+  const handleConfirmDelete = async () => {
+    try {
+      setDeletingUser(deleteConfirmDialog.userId);
+      
+      const response = await axios.post(`${API_URL}/users/delete`, {
+        user_id: deleteConfirmDialog.userId,
+      });
+
+      // Remove user from data
+      const updatedData = allData.filter((name) => name !== deleteConfirmDialog.userId);
+      setAllData(updatedData);
+
+      // Show success dialog
+      setSuccessDialog({
+        open: true,
+        message: `Pengguna "${deleteConfirmDialog.userName}" berhasil dihapus`,
+      });
+
+      // Close confirm dialog
+      setDeleteConfirmDialog({ open: false, userName: "", userId: "" });
+    } catch (err: any) {
+      console.error("Delete error:", err);
+      setSuccessDialog({
+        open: true,
+        message: err.response?.data?.message || "Gagal menghapus pengguna",
+      });
+    } finally {
+      setDeletingUser(null);
+    }
+  };
+
   return (
     <div className="p-4 sm:p-6 lg:p-8">
       {/* Header */}
@@ -174,12 +212,15 @@ export default function UsersListPage() {
                 <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Nama
                 </th>
+                <th className="px-4 py-3 text-right text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                  Aksi
+                </th>
               </tr>
             </thead>
             <tbody className="divide-y divide-zinc-200 dark:divide-zinc-700">
               {loading ? (
                 <tr>
-                  <td colSpan={2} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={3} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex items-center justify-center gap-2">
                       <svg className="h-5 w-5 animate-spin text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -191,7 +232,7 @@ export default function UsersListPage() {
                 </tr>
               ) : error ? (
                 <tr>
-                  <td colSpan={2} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={3} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex flex-col items-center gap-2">
                       <svg className="h-10 w-10 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -208,7 +249,7 @@ export default function UsersListPage() {
                 </tr>
               ) : data.length === 0 ? (
                 <tr>
-                  <td colSpan={2} className="px-4 py-8 text-center sm:px-6">
+                  <td colSpan={3} className="px-4 py-8 text-center sm:px-6">
                     <div className="flex flex-col items-center gap-2">
                       <svg className="h-10 w-10 text-zinc-300 dark:text-zinc-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
@@ -239,6 +280,26 @@ export default function UsersListPage() {
                           {name}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-4 py-3 text-right sm:px-6">
+                      <button
+                        onClick={() => handleDeleteClick(name)}
+                        disabled={deletingUser === name}
+                        className="flex items-center gap-1 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 transition-all hover:bg-red-200 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                        title="Hapus pengguna"
+                      >
+                        {deletingUser === name ? (
+                          <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                        ) : (
+                          <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                        <span className="hidden sm:inline">Hapus</span>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -337,6 +398,76 @@ export default function UsersListPage() {
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      {deleteConfirmDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="rounded-xl bg-white shadow-lg dark:bg-zinc-800 max-w-sm w-full">
+            <div className="border-b border-zinc-200 px-6 py-4 dark:border-zinc-700">
+              <h2 className="text-lg font-bold text-zinc-900 dark:text-white">Hapus Pengguna</h2>
+            </div>
+            <div className="px-6 py-4">
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">
+                Apakah Anda yakin ingin menghapus pengguna <span className="font-semibold text-zinc-900 dark:text-white">"{deleteConfirmDialog.userName}"</span>? Data ini tidak dapat dikembalikan.
+              </p>
+            </div>
+            <div className="border-t border-zinc-200 flex gap-3 px-6 py-4 dark:border-zinc-700">
+              <button
+                onClick={() => setDeleteConfirmDialog({ open: false, userName: "", userId: "" })}
+                disabled={deletingUser !== null}
+                className="flex-1 rounded-lg border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-700 transition-colors hover:bg-zinc-50 disabled:opacity-50 dark:border-zinc-600 dark:bg-zinc-700 dark:text-zinc-300 dark:hover:bg-zinc-600"
+              >
+                Batal
+              </button>
+              <button
+                onClick={handleConfirmDelete}
+                disabled={deletingUser !== null}
+                className="flex-1 flex items-center justify-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-red-700 disabled:opacity-50 dark:bg-red-700 dark:hover:bg-red-800"
+              >
+                {deletingUser ? (
+                  <>
+                    <svg className="h-4 w-4 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Menghapus...
+                  </>
+                ) : (
+                  "Ya, Hapus"
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Success Dialog */}
+      {successDialog.open && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+          <div className="rounded-xl bg-white shadow-lg dark:bg-zinc-800 max-w-sm w-full">
+            <div className="px-6 py-6 text-center">
+              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-green-100 dark:bg-green-900/30">
+                <svg className="h-6 w-6 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="mb-2 text-lg font-bold text-zinc-900 dark:text-white">Berhasil</h2>
+              <p className="mb-6 text-sm text-zinc-600 dark:text-zinc-400">
+                {successDialog.message}
+              </p>
+              <button
+                onClick={() => {
+                  setSuccessDialog({ open: false, message: "" });
+                  setCurrentPage(1); // Reset to first page after delete
+                }}
+                className="w-full rounded-lg bg-green-600 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-800"
+              >
+                Tutup
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -9,13 +9,15 @@ interface AttendanceCameraProps {
   disabled?: boolean;
   loading?: boolean;
   autoCapture?: boolean; // Enable automatic capture when face detected
+  enableCapture?: boolean; // Enable detection loop (pause if false)
 }
 
 export default function AttendanceCamera({ 
   onCapture, 
   disabled = false,
   loading = false,
-  autoCapture = false
+  autoCapture = false,
+  enableCapture = true
 }: AttendanceCameraProps) {
   const webcamRef = useRef<Webcam>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -78,6 +80,17 @@ export default function AttendanceCamera({
     if (!modelsLoaded || !webcamRef.current || !faceapi) return;
 
     const detectFace = async () => {
+      // Stop detection loop if capture is disabled
+      if (!enableCapture) {
+        if (canvasRef.current) {
+          const ctx = canvasRef.current.getContext("2d");
+          if (ctx) {
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          }
+        }
+        return;
+      }
+
       const video = webcamRef.current?.video;
       if (!video || video.readyState !== 4) return;
 
@@ -181,7 +194,7 @@ export default function AttendanceCamera({
 
     const interval = setInterval(detectFace, 100);
     return () => clearInterval(interval);
-  }, [modelsLoaded, canCapture, faceapi]);
+  }, [modelsLoaded, canCapture, faceapi, enableCapture]);
 
   // Capture foto dari webcam dengan debounce
   const captureHandler = useCallback(() => {
@@ -209,7 +222,7 @@ export default function AttendanceCamera({
   }, [canCapture, onCapture]);
 
   useEffect(() => {
-    if (!autoCapture || !canCapture || loading) {
+    if (!autoCapture || !canCapture || loading || !enableCapture) {
       return;
     }
 
@@ -224,7 +237,7 @@ export default function AttendanceCamera({
         onCapture(base64Image);
       }
     }
-  }, [autoCapture, canCapture, loading, onCapture]);
+  }, [autoCapture, canCapture, loading, onCapture, enableCapture]);
 
   return (
     <div className="space-y-4">
