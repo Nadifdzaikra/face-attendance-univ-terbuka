@@ -6,6 +6,11 @@ import Link from "next/link";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://10.0.107.18:8009/api";
 
+interface User {
+  id: string | number;
+  name: string;
+}
+
 interface PaginationInfo {
   page: number;
   limit: number;
@@ -15,9 +20,9 @@ interface PaginationInfo {
 }
 
 export default function UsersListPage() {
-  const [allData, setAllData] = useState<string[]>([]);
-  const [data, setData] = useState<string[]>([]);
-  const [filteredData, setFilteredData] = useState<string[]>([]);
+  const [allData, setAllData] = useState<User[]>([]);
+  const [data, setData] = useState<User[]>([]);
+  const [filteredData, setFilteredData] = useState<User[]>([]);
   const [pagination, setPagination] = useState<PaginationInfo>({
     page: 1,
     limit: 10,
@@ -61,11 +66,11 @@ export default function UsersListPage() {
       setLoading(true);
       setError(null);
 
-      const response = await axios.get(`${API_URL}/users/summary`);
+      const response = await axios.get(`${API_URL}/users/get_all`);
 
-      // Extract names array from response
-      if (response.data && Array.isArray(response.data.names)) {
-        setAllData(response.data.names);
+      // Extract data array from response
+      if (response.data && Array.isArray(response.data.data)) {
+        setAllData(response.data.data);
       } else {
         setAllData([]);
       }
@@ -80,10 +85,10 @@ export default function UsersListPage() {
 
   const paginateData = () => {
     // Apply search filter
-    let results = allData.filter((name) => {
-      if (!name) return false;
+    let results = allData.filter((user) => {
+      if (!user || !user.name) return false;
       const q = debouncedSearch.toLowerCase();
-      return name.toLowerCase().includes(q);
+      return user.name.toLowerCase().includes(q) || String(user.id).toLowerCase().includes(q);
     });
 
     setFilteredData(results);
@@ -108,20 +113,20 @@ export default function UsersListPage() {
     setPagination({ page: safePage, limit: itemsPerPage, total, pages, returned: pageData.length });
   };
 
-  const handleDeleteClick = (userName: string) => {
-    setDeleteConfirmDialog({ open: true, userName, userId: userName });
+  const handleDeleteClick = (userName: string, userId: string | number) => {
+    setDeleteConfirmDialog({ open: true, userName, userId: String(userId) });
   };
 
   const handleConfirmDelete = async () => {
     try {
       setDeletingUser(deleteConfirmDialog.userId);
-      
-      const response = await axios.post(`${API_URL}/users/delete`, {
-        user_id: deleteConfirmDialog.userId,
+
+      const response = await axios.delete(`${API_URL}/users/delete`, {
+        data: { id: deleteConfirmDialog.userId },
       });
 
       // Remove user from data
-      const updatedData = allData.filter((name) => name !== deleteConfirmDialog.userId);
+      const updatedData = allData.filter((user) => String(user.id) !== deleteConfirmDialog.userId);
       setAllData(updatedData);
 
       // Show success dialog
@@ -206,13 +211,13 @@ export default function UsersListPage() {
           <table className="w-full">
             <thead className="bg-zinc-50 dark:bg-zinc-900/30">
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   No
                 </th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Nama
                 </th>
-                <th className="px-4 py-3 text-right text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
+                <th className="px-4 py-3 text-center text-xs font-semibold text-zinc-600 dark:text-zinc-400 sm:px-6">
                   Aksi
                 </th>
               </tr>
@@ -264,31 +269,31 @@ export default function UsersListPage() {
                   </td>
                 </tr>
               ) : (
-                data.map((name, index) => (
-                  <tr key={index} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/30">
-                    <td className="px-4 py-3 text-sm font-medium text-zinc-600 dark:text-zinc-400 sm:px-6">
+                data.map((user, index) => (
+                  <tr key={user.id} className="transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-900/30">
+                    <td className="px-4 py-3 text-sm text-center font-medium text-zinc-600 dark:text-zinc-400 sm:px-6">
                       {(currentPage - 1) * itemsPerPage + index + 1}
                     </td>
-                    <td className="px-4 py-3 sm:px-6">
+                    <td className="px-4 py-3 text-center sm:px-6">
                       <div className="flex items-center gap-2">
                         <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900/30">
                           <span className="text-xs font-semibold text-blue-600 dark:text-blue-400">
-                            {name?.charAt(0)?.toUpperCase() || "?"}
+                            {user.name?.charAt(0)?.toUpperCase() || "?"}
                           </span>
                         </div>
                         <span className="text-sm font-medium text-zinc-900 dark:text-white">
-                          {name}
+                          {user.name}
                         </span>
                       </div>
                     </td>
-                    <td className="px-4 py-3 text-right sm:px-6">
+                    <td className="px-4 py-3 text-center sm:px-6">
                       <button
-                        onClick={() => handleDeleteClick(name)}
-                        disabled={deletingUser === name}
-                        className="flex items-center gap-1 rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 transition-all hover:bg-red-200 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
+                        onClick={() => handleDeleteClick(user.name, user.id)}
+                        disabled={deletingUser === String(user.id)}
+                        className="flex items-center gap-1 mx-auto rounded-lg bg-red-100 px-3 py-1.5 text-xs font-medium text-red-700 transition-all hover:bg-red-200 disabled:opacity-50 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50"
                         title="Hapus pengguna"
                       >
-                        {deletingUser === name ? (
+                        {deletingUser === String(user.id) ? (
                           <svg className="h-3.5 w-3.5 animate-spin" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
