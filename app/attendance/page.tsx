@@ -52,7 +52,7 @@ export default function AttendancePage() {
 
     try {
       // Gunakan proxy API route untuk menghindari CORS
-      const response = await axios.post(`${API_URL}/recognize`, {
+      const response = await axios.post(`${API_URL}recognize`, {
         image: imageData,
         ruang: ruang,
       });
